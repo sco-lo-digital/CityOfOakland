@@ -20,7 +20,7 @@ gf_expenses$target <- rep(100,nrow(gf_expenses))
 names(gf_expenses) <- c("name", "value", "source", "target")
 
 
-#Make General Fun Revenues
+#Make General Fund Revenues
 gf_revenues <- dplyr::filter(generalfund,Expense.or.Revenue=="Revenue")
 gf_revenues  <- aggregate(gf_revenues$Value, by=list(Account=gf_revenues$Account.Type), FUN=sum)
 gf_revenues$source <- rep(101, nrow(gf_revenues))
@@ -83,7 +83,7 @@ nodes <- data.frame(name = c(unique(newdf$name),"General Fund", "Non-Discretiona
 links <- data.frame(source = newdf$source, target = newdf$target, value = newdf$value/1000000, stringsAsFactors = F)
 sankeyDF <- list(nodes = nodes, links = links)
 
-### Write out the graph data to a json file as well
+### Write out the graph data to a json file
 library(jsonlite)
 graphJSON <- toJSON(sankeyDF, pretty=TRUE)
 # cat(graphJSON)
