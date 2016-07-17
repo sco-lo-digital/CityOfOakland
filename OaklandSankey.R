@@ -1,15 +1,13 @@
-
-
 #########
 
 library(pacman)
 p_load(RSocrata, networkD3, magrittr)
 #Budget
 budget <- read.socrata("https://data.oaklandnet.com/resource/w4j2-chmt.csv")    
-    #Make 15-16 Budget
-    newbudget <- budget %>% dplyr::filter(Fiscal.Year == "FY15-16") %>% dplyr::select( Expense.or.Revenue, Department, Fund, Account.Type, Value)
-    newbudget$Department <- as.character(newbudget$Department)
-    newbudget$Account.Type <- as.character(newbudget$Account.Type)
+#Make 15-16 Budget
+newbudget <- budget %>% dplyr::filter(Fiscal.Year == "FY15-16") %>% dplyr::select( Expense.or.Revenue, Department, Fund, Account.Type, Value)
+newbudget$Department <- as.character(newbudget$Department)
+newbudget$Account.Type <- as.character(newbudget$Account.Type)
 #Make General Fund
 generalfund <- newbudget %>% dplyr::filter(Fund == 1010)
 
@@ -59,24 +57,24 @@ newdf <- dplyr::left_join(df, lookUp, by="name")
 
 #re-write source
 for (i in seq(along = newdf$source)) {
-    
-    if(newdf$source[i] <= 39) {
-        newdf$source[i] <- newdf$source[i]
-    } else {
-        newdf$source[i] <- newdf$id[i]
-    }
-    
+  
+  if(newdf$source[i] <= 39) {
+    newdf$source[i] <- newdf$source[i]
+  } else {
+    newdf$source[i] <- newdf$id[i]
+  }
+  
 }
 
 #re-write target
 for (i in seq(along = newdf$target)) {
-    
-    if(newdf$target[i] <= 39) {
-        newdf$target[i] <- newdf$target[i]
-    } else {
-        newdf$target[i] <- newdf$id[i]
-    }
-    
+  
+  if(newdf$target[i] <= 39) {
+    newdf$target[i] <- newdf$target[i]
+  } else {
+    newdf$target[i] <- newdf$id[i]
+  }
+  
 }
 #### Data wrangling end
 
@@ -84,6 +82,13 @@ for (i in seq(along = newdf$target)) {
 nodes <- data.frame(name = c(unique(newdf$name),"General Fund", "Non-Discretionary"), stringsAsFactors = F)
 links <- data.frame(source = newdf$source, target = newdf$target, value = newdf$value/1000000, stringsAsFactors = F)
 sankeyDF <- list(nodes = nodes, links = links)
+
+### Write out the graph data to a json file as well
+library(jsonlite)
+graphJSON <- toJSON(sankeyDF, pretty=TRUE)
+# cat(graphJSON)
+write(graphJSON, "graph.json")
+
 #Publish Sankey
 sankeyPlot <- sankeyNetwork(Links = sankeyDF$links, Nodes = sankeyDF$nodes, Source = "source",
               Target = "target", Value = "value", NodeID = "name", units = "$M", colourScale = JS("d3.scale.category20c()"),
